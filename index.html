@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Preferences | Impact Finance Center</title>
+    <meta name="description" content="Manage your email preferences for Impact Finance Center communications.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <img src="https://cdn-ilchpbl.nitrocdn.com/KpZEGnybTXaXdOBYcLOylfPsvvtoFYRi/assets/images/optimized/rev-594276a/impactfinancecenter.org/wp-content/uploads/2022/08/IFCTransparent-300x109.png"
+                    alt="Impact Finance Center" class="logo-img">
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Two Column Layout -->
+            <div class="demo-layout">
+                <!-- Left: Email Mockup -->
+                <div class="email-mockup">
+                    <div class="email-mockup-header">
+                        <span class="email-badge">Email Preview</span>
+                        <span class="email-type">How it looks in your inbox</span>
+                    </div>
+                    <div class="email-preview">
+                        <div class="email-header-preview">
+                            <img src="https://cdn-ilchpbl.nitrocdn.com/KpZEGnybTXaXdOBYcLOylfPsvvtoFYRi/assets/images/optimized/rev-594276a/impactfinancecenter.org/wp-content/uploads/2022/08/IFCTransparent-300x109.png"
+                                alt="IFC" class="email-logo">
+                        </div>
+                        <div class="email-body">
+                            <h3>Moving Money for Impact</h3>
+                            <p class="email-greeting">Dear Impact Investor,</p>
+                            <p>We're excited to share our latest insights on community-centered impact investing and the
+                                transformative work happening across the sector.</p>
+                            <p>In this month's newsletter, you'll discover how capital stewards are creating meaningful
+                                change in their communities...</p>
+                            <div class="email-placeholder">
+                                <div class="placeholder-line"></div>
+                                <div class="placeholder-line short"></div>
+                                <div class="placeholder-line"></div>
+                                <div class="placeholder-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="email-footer-preview">
+                            <p class="email-footer-text">Impact Finance Center | Moving Money for Impact</p>
+                            <a href="#" class="email-manage-link" onclick="event.preventDefault();">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="3" />
+                                    <path
+                                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                                </svg>
+                                Manage Preferences
+                            </a>
+                        </div>
+                    </div>
+                    <div class="email-mockup-note">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                        <span>One link replaces 4 separate links</span>
+                    </div>
+                </div>
+
+                <!-- Right: Preference Center -->
+                <div class="card">
+                    <div class="card-header">
+                        <h1>Email Preferences</h1>
+                        <p class="subtitle">Manage how you receive communications from Impact Finance Center</p>
+                    </div>
+
+                    <!-- Email Display -->
+                    <div class="email-display" id="emailDisplay">
+                        <span class="email-label">Managing preferences for:</span>
+                        <span class="email-value" id="userEmail">your-email@example.com</span>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="options">
+                        <!-- Subscribe -->
+                        <button class="option-card option-subscribe" onclick="handleAction('subscribe')">
+                            <div class="option-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                                </svg>
+                            </div>
+                            <div class="option-content">
+                                <h3>Subscribe</h3>
+                                <p>Opt back in to receive our updates and insights on impact investing</p>
+                            </div>
+                            <div class="option-arrow">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M9 18l6-6-6-6" />
+                                </svg>
+                            </div>
+                        </button>
+
+                        <!-- Unsubscribe from Campaign -->
+                        <button class="option-card option-campaign" onclick="handleAction('unsubscribe-campaign')">
+                            <div class="option-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                </svg>
+                            </div>
+                            <div class="option-content">
+                                <h3>Unsubscribe from this Campaign</h3>
+                                <p>Stop receiving emails from this specific campaign only</p>
+                                <span class="campaign-name" id="campaignName">Current Campaign</span>
+                            </div>
+                            <div class="option-arrow">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M9 18l6-6-6-6" />
+                                </svg>
+                            </div>
+                        </button>
+
+                        <!-- Unsubscribe All -->
+                        <button class="option-card option-unsubscribe" onclick="handleAction('unsubscribe-all')">
+                            <div class="option-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="15" y1="9" x2="9" y2="15" />
+                                    <line x1="9" y1="9" x2="15" y2="15" />
+                                </svg>
+                            </div>
+                            <div class="option-content">
+                                <h3>Unsubscribe from All Emails</h3>
+                                <p>Stop receiving all marketing communications from us</p>
+                            </div>
+                            <div class="option-arrow">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M9 18l6-6-6-6" />
+                                </svg>
+                            </div>
+                        </button>
+
+                        <!-- Privacy Policy -->
+                        <button class="option-card option-privacy" onclick="openPrivacyPolicy()">
+                            <div class="option-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                                </svg>
+                            </div>
+                            <div class="option-content">
+                                <h3>Privacy Policy</h3>
+                                <p>Learn how we collect, use, and protect your data</p>
+                            </div>
+                            <div class="option-arrow">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M9 18l6-6-6-6" />
+                                </svg>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 Impact Finance Center. All rights reserved.</p>
+            <p>Moving Money for Impact</p>
+        </footer>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div class="modal-icon success">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+            </div>
+            <h2 id="modalTitle">Success!</h2>
+            <p id="modalMessage">Your preferences have been updated.</p>
+            <button class="btn-primary" onclick="closeModal()">Done</button>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal" id="privacyModal">
+        <div class="modal-content modal-large">
+            <button class="modal-close" onclick="closePrivacyModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+            <h2>Privacy Policy</h2>
+            <div class="privacy-content">
+                <p><strong>Last updated:</strong> January 2026</p>
+
+                <h3>1. Information We Collect</h3>
+                <p>Impact Finance Center collects information you provide directly, including your name, email address,
+                    and organization details when you subscribe to our communications or engage with our services.</p>
+
+                <h3>2. How We Use Your Information</h3>
+                <p>We use your information to:</p>
+                <ul>
+                    <li>Send you newsletters, updates, and insights about impact investing</li>
+                    <li>Notify you about events, programs, and opportunities</li>
+                    <li>Improve our services and communications</li>
+                    <li>Respond to your inquiries and requests</li>
+                </ul>
+
+                <h3>3. Data Sharing</h3>
+                <p>We do not sell your personal information. We may share your data with trusted service providers who
+                    assist us in operating our organization, conducting our business, or servicing you.</p>
+
+                <h3>4. Your Rights</h3>
+                <p>You have the right to:</p>
+                <ul>
+                    <li>Access the personal data we hold about you</li>
+                    <li>Request correction of inaccurate data</li>
+                    <li>Request deletion of your data</li>
+                    <li>Opt-out of marketing communications at any time</li>
+                </ul>
+
+                <h3>5. Data Security</h3>
+                <p>We implement appropriate technical and organizational measures to protect your personal information
+                    against unauthorized access, alteration, disclosure, or destruction.</p>
+
+                <h3>6. Contact Us</h3>
+                <p>If you have questions about this Privacy Policy, please contact us at:</p>
+                <p><strong>Impact Finance Center</strong><br>
+                    Email: info@impactfinancecenter.org</p>
+            </div>
+            <button class="btn-primary" onclick="closePrivacyModal()">Close</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
