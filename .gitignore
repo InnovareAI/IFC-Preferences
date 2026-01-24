@@ -1,0 +1,20 @@
+# Local Netlify folder
+.netlify
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Node modules (if any local dev)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

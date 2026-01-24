@@ -230,6 +230,19 @@ body {
     color: var(--white);
 }
 
+.email-footer-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.email-link-separator {
+    color: var(--gray-300);
+    font-size: 0.875rem;
+}
+
 .email-mockup-note {
     display: flex;
     align-items: center;
@@ -516,6 +529,55 @@ body {
 .modal-icon.success {
     background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
     color: var(--success);
+}
+
+.modal-icon.error {
+    background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+    color: var(--danger);
+}
+
+/* Loading State */
+.option-card.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.option-card.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 1.5rem;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--gray-300);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.option-card {
+    position: relative;
+}
+
+.option-card.loading .option-arrow {
+    opacity: 0;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Email warning state */
+.email-display.warning {
+    border-color: var(--warning);
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 30%);
+}
+
+.email-value.email-missing {
+    color: var(--warning);
+    font-style: italic;
 }
 
 .modal-content h2 {
