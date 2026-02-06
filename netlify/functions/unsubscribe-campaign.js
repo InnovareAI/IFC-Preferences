@@ -1,15 +1,13 @@
 /**
  * Unsubscribe Campaign Function
- * Unsubscribes a contact from a specific campaign/subscription type
- * - HubSpot: Unsubscribe from specific subscription type
- * - ReachInbox: Update lead status to "Unsubscribed" for the campaign
+ * Unsubscribes a contact from a specific campaign
+ * Routes to HubSpot or ReachInbox based on source param
  */
 
 const HUBSPOT_API_KEY = process.env.HUBSPOT_API_KEY;
 const REACHINBOX_API_KEY = process.env.REACHINBOX_API_KEY;
 
 exports.handler = async (event, context) => {
-    // Set CORS headers
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
@@ -17,18 +15,8 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json'
     };
 
-    // Handle preflight
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 204, headers, body: '' };
-    }
-
-    // Only allow POST
-    if (event.httpMethod !== 'POST') {
-        return {
-            statusCode: 405,
-            headers,
-            body: JSON.stringify({ error: 'Method not allowed' })
-        };
     }
 
     try {
@@ -42,21 +30,37 @@ exports.handler = async (event, context) => {
             };
         }
 
-        console.log(`[Unsubscribe Campaign] Processing for: ${email}, campaign: ${campaign}`);
+        console.log(`[Unsubscribe Campaign] Processing for: ${email}, Campaign: ${campaign}, Source: ${source}`);
 
         const results = {
             hubspot: null,
             reachinbox: null
         };
 
-        // Unsubscribe from HubSpot subscription type
-        if (HUBSPOT_API_KEY) {
-            results.hubspot = await unsubscribeFromHubSpot(email, campaign);
-        }
+        if (source === 'reachinbox') {
+            // ReachInbox source — only call ReachInbox blocklist
+            results.reachinbox = REACHINBOX_API_KEY
+                ? await addToReachInboxBlocklist(email)
+                : { skipped: true, reason: 'No API key' };
+        } else if (source === 'hubspot') {
+            // HubSpot source — only call HubSpot
+            results.hubspot = HUBSPOT_API_KEY
+                ? await unsubscribeFromHubSpot(email, campaignId)
+                : { skipped: true, reason: 'No API key' };
+        } else {
+            // Unknown source — try both (same pattern as unsubscribe-all)
+            const [hubspotResult, reachinboxResult] = await Promise.allSettled([
+                HUBSPOT_API_KEY ? unsubscribeFromHubSpot(email, campaignId) : Promise.resolve({ skipped: true }),
+                REACHINBOX_API_KEY ? addToReachInboxBlocklist(email) : Promise.resolve({ skipped: true })
+            ]);
 
-        // Update lead status in ReachInbox
-        if (REACHINBOX_API_KEY && campaignId) {
-            results.reachinbox = await updateReachInboxLeadStatus(email, campaignId);
+            results.hubspot = hubspotResult.status === 'fulfilled'
+                ? hubspotResult.value
+                : { success: false, error: hubspotResult.reason?.message };
+
+            results.reachinbox = reachinboxResult.status === 'fulfilled'
+                ? reachinboxResult.value
+                : { success: false, error: reachinboxResult.reason?.message };
         }
 
         return {
@@ -64,9 +68,8 @@ exports.handler = async (event, context) => {
             headers,
             body: JSON.stringify({
                 success: true,
-                message: `Successfully unsubscribed from campaign: ${campaign}`,
+                message: `Successfully unsubscribed from ${campaign}`,
                 email,
-                campaign,
                 ...results
             })
         };
@@ -85,42 +88,68 @@ exports.handler = async (event, context) => {
 };
 
 /**
- * Unsubscribe from HubSpot subscription type
- * Uses v3 API to unsubscribe from a specific subscription type
+ * Add email to ReachInbox blocklist
  */
-async function unsubscribeFromHubSpot(email, campaignName) {
+async function addToReachInboxBlocklist(email) {
     try {
-        // First, get all subscription types to find the matching one
-        const subscriptionTypesResponse = await fetch(
-            'https://api.hubapi.com/communication-preferences/v3/definitions',
+        const response = await fetch(
+            'https://api.reachinbox.ai/api/v1/blocklist/add',
             {
+                method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${HUBSPOT_API_KEY}`,
+                    'Authorization': `Bearer ${REACHINBOX_API_KEY}`,
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({
+                    emails: [email]
+                })
             }
         );
 
-        if (!subscriptionTypesResponse.ok) {
-            throw new Error(`Failed to get subscription types: ${subscriptionTypesResponse.status}`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[ReachInbox] Add to blocklist failed:', errorText);
+            throw new Error(`ReachInbox blocklist failed: ${response.status}`);
         }
 
-        const { subscriptionDefinitions } = await subscriptionTypesResponse.json();
+        const result = await response.json();
+        console.log('[ReachInbox] Successfully added to blocklist:', email);
+        return { success: true, ...result };
 
-        // Find matching subscription type by name (case-insensitive partial match)
-        const subscriptionType = subscriptionDefinitions?.find(s =>
-            s.name.toLowerCase().includes(campaignName.toLowerCase()) ||
-            campaignName.toLowerCase().includes(s.name.toLowerCase())
-        );
+    } catch (error) {
+        console.error('[ReachInbox] Error:', error);
+        return { success: false, error: error.message };
+    }
+}
 
-        if (!subscriptionType) {
-            console.log('[HubSpot] No matching subscription type found for campaign:', campaignName);
-            // Still return success as unsubscribe action was acknowledged
-            return { success: true, message: 'Campaign not found in HubSpot, no action taken' };
+async function unsubscribeFromHubSpot(email, campaignId) {
+    try {
+        // Use the campaignId as the subscriptionId if provided, or find the default one
+        let subscriptionId = campaignId;
+
+        if (!subscriptionId) {
+            // Get subscription definitions to find a default if none provided
+            const definitionsResponse = await fetch(
+                'https://api.hubapi.com/communication-preferences/v3/definitions',
+                {
+                    headers: {
+                        'Authorization': `Bearer ${HUBSPOT_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (definitionsResponse.ok) {
+                const { subscriptionDefinitions } = await definitionsResponse.json();
+                subscriptionId = subscriptionDefinitions?.[0]?.id;
+            }
         }
 
-        // Unsubscribe the contact from this subscription type
-        const unsubscribeResponse = await fetch(
+        if (!subscriptionId) {
+            return { success: false, message: 'No subscription ID found' };
+        }
+
+        const response = await fetch(
             'https://api.hubapi.com/communication-preferences/v3/unsubscribe',
             {
                 method: 'POST',
@@ -130,88 +159,22 @@ async function unsubscribeFromHubSpot(email, campaignName) {
                 },
                 body: JSON.stringify({
                     emailAddress: email,
-                    subscriptionId: subscriptionType.id
+                    subscriptionId: subscriptionId,
+                    legalBasis: 'CONSENT_WITH_NOTICE',
+                    legalBasisExplanation: 'User opted out via email preference center'
                 })
             }
         );
 
-        if (!unsubscribeResponse.ok) {
-            const errorText = await unsubscribeResponse.text();
+        if (!response.ok) {
+            const errorText = await response.text();
             console.error('[HubSpot] Unsubscribe failed:', errorText);
-            throw new Error(`HubSpot unsubscribe failed: ${unsubscribeResponse.status}`);
+            throw new Error(`HubSpot unsubscribe failed: ${response.status}`);
         }
 
-        console.log('[HubSpot] Successfully unsubscribed from subscription type:', subscriptionType.name);
-        return {
-            success: true,
-            subscriptionId: subscriptionType.id,
-            subscriptionName: subscriptionType.name
-        };
-
+        return { success: true, subscriptionId };
     } catch (error) {
         console.error('[HubSpot] Error:', error);
-        return { success: false, error: error.message };
-    }
-}
-
-/**
- * Update lead status in ReachInbox
- * Sets the lead status to "Unsubscribed" for the specific campaign
- */
-async function updateReachInboxLeadStatus(email, campaignId) {
-    try {
-        // First, we need to get the lead ID from the email and campaign
-        const leadsResponse = await fetch(
-            `https://api.reachinbox.ai/api/v1/leads?campaignId=${campaignId}&email=${encodeURIComponent(email)}`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${REACHINBOX_API_KEY}`
-                }
-            }
-        );
-
-        if (!leadsResponse.ok) {
-            const errorText = await leadsResponse.text();
-            console.error('[ReachInbox] Failed to get lead:', errorText);
-            throw new Error(`Failed to get lead: ${leadsResponse.status}`);
-        }
-
-        const leadsData = await leadsResponse.json();
-        const lead = leadsData.data?.find(l => l.email.toLowerCase() === email.toLowerCase());
-
-        if (!lead) {
-            console.log('[ReachInbox] Lead not found for email:', email);
-            return { success: true, message: 'Lead not found in ReachInbox' };
-        }
-
-        // Update the lead status to "Unsubscribed"
-        const updateResponse = await fetch(
-            'https://api.reachinbox.ai/api/v1/leads',
-            {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${REACHINBOX_API_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    campaignId: campaignId,
-                    leadId: lead.id,
-                    leadStatus: 'Unsubscribed'
-                })
-            }
-        );
-
-        if (!updateResponse.ok) {
-            const errorText = await updateResponse.text();
-            console.error('[ReachInbox] Failed to update lead status:', errorText);
-            throw new Error(`Failed to update lead status: ${updateResponse.status}`);
-        }
-
-        console.log('[ReachInbox] Successfully updated lead status to Unsubscribed');
-        return { success: true, leadId: lead.id };
-
-    } catch (error) {
-        console.error('[ReachInbox] Error:', error);
-        return { success: false, error: error.message };
+        throw error;
     }
 }

@@ -47,8 +47,9 @@ function initializePage() {
     }
 }
 
-// Handle preference actions
-async function handleAction(action) {
+// Handle preference actions — fire-and-forget pattern
+// Modal ALWAYS shows immediately; API call runs in background
+function handleAction(action) {
     const params = getUrlParams();
 
     // Validate email
@@ -57,59 +58,38 @@ async function handleAction(action) {
         return;
     }
 
-    // Show loading state
-    showLoadingState(true);
-
     let title, message;
-    let success = false;
 
-    try {
-        switch (action) {
-            case 'subscribe':
-                await callAPI('/subscribe', {
-                    email: params.email,
-                    campaign: params.campaign,
-                    source: params.source
-                });
-                title = 'Welcome Back!';
-                message = `You've been re-subscribed to Impact Finance Center communications at ${params.email}.`;
-                success = true;
-                break;
+    switch (action) {
+        case 'unsubscribe-campaign':
+            title = 'Unsubscribed from Campaign';
+            message = `You will no longer receive emails from "${params.campaign}". You'll still receive other communications from us.`;
+            break;
 
-            case 'unsubscribe-campaign':
-                await callAPI('/unsubscribe-campaign', {
-                    email: params.email,
-                    campaign: params.campaign,
-                    campaignId: params.campaignId,
-                    source: params.source
-                });
-                title = 'Unsubscribed from Campaign';
-                message = `You will no longer receive emails from "${params.campaign}". You'll still receive other communications from us.`;
-                success = true;
-                break;
+        case 'unsubscribe-all':
+            title = 'Unsubscribed';
+            message = `${params.email} has been removed from all Impact Finance Center mailing lists. We're sorry to see you go.`;
+            break;
 
-            case 'unsubscribe-all':
-                await callAPI('/unsubscribe-all', {
-                    email: params.email,
-                    source: params.source
-                });
-                title = 'Unsubscribed';
-                message = `${params.email} has been removed from all Impact Finance Center mailing lists. We're sorry to see you go.`;
-                success = true;
-                break;
-
-            default:
-                throw new Error(`Unknown action: ${action}`);
-        }
-    } catch (error) {
-        console.error(`[${action}] Error:`, error);
-        title = 'Error';
-        message = `There was a problem processing your request. Please try again later or contact us directly.`;
-    } finally {
-        showLoadingState(false);
+        default:
+            showModal('Error', 'Unknown action. Please try again.', 'error');
+            return;
     }
 
-    showModal(title, message, success ? 'success' : 'error');
+    // Show success modal immediately — don't block on API
+    showModal(title, message, 'success');
+
+    // Fire API call in background — log result but don't affect UI
+    const endpoint = action === 'unsubscribe-campaign' ? '/unsubscribe-campaign' : '/unsubscribe-all';
+    const payload = action === 'unsubscribe-campaign'
+        ? { email: params.email, campaign: params.campaign, campaignId: params.campaignId, source: params.source }
+        : { email: params.email, source: params.source };
+
+    callAPI(endpoint, payload).then(result => {
+        console.log(`[${action}] API success:`, result);
+    }).catch(error => {
+        console.error(`[${action}] API error (modal already shown):`, error);
+    });
 }
 
 // Call API endpoint
